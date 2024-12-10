@@ -1,3 +1,1 @@
 # Hotelli-harjoitus
-
-testi
