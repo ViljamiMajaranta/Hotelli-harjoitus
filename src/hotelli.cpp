@@ -10,15 +10,13 @@
 #include <ctime>
 // Tarvitaan pitämään listaa huoneista ja varauksista
 #include <vector>
-// Tarvitaan, jotta saadaan rivinvaihto ennen getline-komentoa pois
-#include <limits>
 
 using namespace std;
 
 // Funktio, joka etsii huoneen numeron nimellä taulukosta
-vector<int> etsi_huone_numerot_nimella(string kayttajan_nimi, vector<string> &varauksien_nimet, int huoneiden_maara_hotellissa) {    
+vector<int> etsi_huone_numerot_nimella(string kayttajan_nimi, vector<string> &varauksien_nimet) {    
     vector<int> kayttajan_huoneet;
-    for(int i=0;i<huoneiden_maara_hotellissa; i++) {
+    for(int i=0;i<varauksien_nimet.size(); i++) {
         if(varauksien_nimet[i] == kayttajan_nimi) {
             kayttajan_huoneet.push_back(i);
         }
@@ -26,9 +24,9 @@ vector<int> etsi_huone_numerot_nimella(string kayttajan_nimi, vector<string> &va
     return kayttajan_huoneet;
 }
 // Tehdään funktio, joka etsii huone varauksen numerolla taulukosta
-vector<int> etsi_huone_numerot_varaus_numerolla(int varaus_numero, vector<int> &varaus_numerot, int huoneiden_maara_hotellissa) {
+vector<int> etsi_huone_numerot_varaus_numerolla(int varaus_numero, vector<int> &varaus_numerot) {
     vector<int> kayttajan_huoneet; 
-    for(int i=0;i<huoneiden_maara_hotellissa; i++) {
+    for(int i=0;i<varaus_numerot.size(); i++) {
         if(varaus_numerot[i] == varaus_numero) {
             kayttajan_huoneet.push_back(i);
         }
@@ -49,15 +47,15 @@ double hotellihuoneen_hinta(double huoneen_hinta, double huone_alennus, int hote
     return hinta;
 }
 // Tehdään huoneen kokonaishinnan laskeva funktio
-double kokonais_hinta(string kayttajan_nimi, vector<string> &varauksien_nimet, double huone_alennus, int hotelli_yot, int huoneiden_maara_hotellissa) {
-    vector<int> kayttajan_huoneet = etsi_huone_numerot_nimella(kayttajan_nimi, varauksien_nimet, huoneiden_maara_hotellissa);
+double kokonais_hinta(string kayttajan_nimi, vector<string> &varauksien_nimet, double huone_alennus, int hotelli_yot) {
+    vector<int> kayttajan_huoneet = etsi_huone_numerot_nimella(kayttajan_nimi, varauksien_nimet);
     
     int hinta_1hh = 100;
     int hinta_2hh = 150;
     double hinta;
     for(int i=0;i<kayttajan_huoneet.size();i++) {
         int huone_hinta = hinta_2hh;
-        if(onko_yhden_hengen_huone(kayttajan_huoneet[i], huoneiden_maara_hotellissa)) {
+        if(onko_yhden_hengen_huone(kayttajan_huoneet[i], varauksien_nimet.size())) {
             huone_hinta = hinta_1hh;
         }
         hinta+=hotellihuoneen_hinta(huone_hinta, huone_alennus, hotelli_yot);        
@@ -73,10 +71,10 @@ bool huone_varattu(int huoneen_numero, vector<int> &varaus_numerot)
 }
 
 // Tehdään funktio, joka tarkistaa onko kaikki huoneet varattu
-bool kaikki_huoneet_varattu(vector<int> &varaus_numerot, int huoneiden_maara)
+bool kaikki_huoneet_varattu(vector<int> &varaus_numerot)
 {
     bool kaikki_varattu = false;
-    for (int i = 0; i < huoneiden_maara; i++)
+    for (int i = 0; i < varaus_numerot.size(); i++)
     {
         kaikki_varattu = huone_varattu(i, varaus_numerot);
         if (!kaikki_varattu)
@@ -90,12 +88,13 @@ bool kaikki_huoneet_varattu(vector<int> &varaus_numerot, int huoneiden_maara)
 // Tehdään funktio, jolla tehdään huonevaraus ja tallentaa se
 void varaa_huone(int huone_numero, int varaus_numero, string kayttajan_nimi, vector<int> &varaus_numerot, vector<string> &varauksien_nimet)
 {
-    varaus_numerot[huone_numero] = varaus_numero;
-    varauksien_nimet[huone_numero] = kayttajan_nimi;
+    varaus_numerot[huone_numero-1] = varaus_numero;
+    varauksien_nimet[huone_numero-1] = kayttajan_nimi;
 }
 // Tehdään valikko, josta voidaan valita eri vaihtoehtoja. Esimerkiksi valikosta voidaan etsiä nimellä, etsiä numerolla ja mennä takaisin
 
-void etsi_varauksia_valikko(vector<int> &varaus_numerot, vector<string> &varauksien_nimet, int huoneiden_maara_hotellissa) {
+void etsi_varauksia_valikko(vector<int> &varaus_numerot, vector<string> &varauksien_nimet) {
+    int huoneiden_maara_hotellissa = varaus_numerot.size();
     cout << "Valitse seuraavista: " << endl;
     int etsi_varauksia_valikko_valinta = 0;
     while(etsi_varauksia_valikko_valinta != 3) {
@@ -106,7 +105,7 @@ void etsi_varauksia_valikko(vector<int> &varaus_numerot, vector<string> &varauks
         cout << "Valinta: ";
         cin >> etsi_varauksia_valikko_valinta;
         cout << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');        
+        cin.ignore();       
 
         // Etsitään varaus, jonka henkilö on tehnyt
         if(etsi_varauksia_valikko_valinta == 1) {
@@ -114,7 +113,7 @@ void etsi_varauksia_valikko(vector<int> &varaus_numerot, vector<string> &varauks
             cout << "Anna nimi: ";
             getline(cin, nimi);
             cout << endl;
-            vector<int> varatut_huoneet = etsi_huone_numerot_nimella(nimi, varauksien_nimet, huoneiden_maara_hotellissa);
+            vector<int> varatut_huoneet = etsi_huone_numerot_nimella(nimi, varauksien_nimet);
             // Jos varauksia ei löydy, ohjelma ilmoittaa "Varauksia ei löytynyt"
             if(varatut_huoneet.size() == 0) {
                 cout << "Varauksia ei löytynyt!" << endl;
@@ -125,7 +124,7 @@ void etsi_varauksia_valikko(vector<int> &varaus_numerot, vector<string> &varauks
                     if(onko_yhden_hengen_huone(huone, huoneiden_maara_hotellissa)) {
                         huonekoko = 1;
                     }
-                    cout << "Huone " << varatut_huoneet[i] << " (" << huonekoko << "hh)" << endl;
+                    cout << "Huone " << varatut_huoneet[i]+1 << " (" << huonekoko << "hh)" << endl;
                 }                
             }            
             // Etsitään varausnumero, joka käyttäjälle on luotu
@@ -134,7 +133,7 @@ void etsi_varauksia_valikko(vector<int> &varaus_numerot, vector<string> &varauks
             cout << "Anna varausnumero: ";
             cin >> varaus_numero;
             cout << endl;
-            vector<int> varatut_huoneet = etsi_huone_numerot_varaus_numerolla(varaus_numero, varaus_numerot, huoneiden_maara_hotellissa);
+            vector<int> varatut_huoneet = etsi_huone_numerot_varaus_numerolla(varaus_numero, varaus_numerot);
             // Jos käyttäjän varausnumeroa ei ole, ohjelma ilmoittaa "Varauksia ei löytynyt!"
             if(varatut_huoneet.size() == 0) {
                 cout << "Varauksia ei löytynyt!" << endl;
@@ -146,16 +145,20 @@ void etsi_varauksia_valikko(vector<int> &varaus_numerot, vector<string> &varauks
                     if(onko_yhden_hengen_huone(huone, huoneiden_maara_hotellissa)) {
                         huonekoko = 1;
                     }
-                    cout << "Huone " << varatut_huoneet[i] << " (" << huonekoko << "hh)" << endl;
+                    cout << "Huone " << varatut_huoneet[i]+1 << " (" << huonekoko << "hh)" << endl;
                 }
             }
         }
     }
 }
 
-void varaus_valikko(int min_varaus_numero, int max_varaus_numero, char &vastaus, int &kayttajan_valitsema_huonenumero, int huoneiden_maara, vector<int> &varaus_numerot, vector<string> &varauksien_nimet, int &huone_tyyppi, int &kayttajan_yot)
+void varaus_valikko(int min_varaus_numero, int max_varaus_numero, int huoneiden_maara, vector<int> &varaus_numerot, vector<string> &varauksien_nimet)
 {
     string kayttajan_nimi;
+    char vastaus;
+    int kayttajan_valitsema_huonenumero;
+    int huone_tyyppi;
+    int kayttajan_yot;
 
     // Otetaan varaajan nimi ylos varauksen tarkastelua varten
     cout << "Anna nimesi, jotta saamme nimesi ylos varausta varten: ";
@@ -220,7 +223,7 @@ kayttajanvalinta:
             srand(time(0));
 
             // Jos kaikki huoneet ovat varattu, ohjelma ei anna käyttäjän varata huonetta
-            if (kaikki_huoneet_varattu(varaus_numerot, huoneiden_maara))
+            if (kaikki_huoneet_varattu(varaus_numerot))
             {
                 cout << "Hotellissa ei valitettavasti ole yhtakaan vapaata huonetta. Pahoittelut!" << endl;
                 return;
@@ -299,7 +302,7 @@ kayttajan_valitsemien_huoneiden_yot:
         int alennus_indeksi = rand() % 3;
         double alennus = alennus_taulukko[alennus_indeksi];        
 
-        double hotelli_oiden_summa = kokonais_hinta(kayttajan_nimi, varauksien_nimet, alennus, kayttajan_yot, huoneiden_maara);
+        double hotelli_oiden_summa = kokonais_hinta(kayttajan_nimi, varauksien_nimet, alennus, kayttajan_yot);
         // double hotelli_oiden_summa = hotellihuoneen_hinta(huoneen_hinta, alennus_taulukko[alennus_indeksi], kayttajan_yot);
         cout << "Huoneiden loppusummaksi jaa " << hotelli_oiden_summa << "€ (alennus: " << alennus * 100 << "%), kun viivytte " << kayttajan_yot << " yota hotellissa" << endl;
     }    
@@ -347,13 +350,13 @@ int main()
         cout << "Valinta: ";
         cin >> paavalikko_valinta;
         cout << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore();
     // Etsitään varaus
         if(paavalikko_valinta == 1) {
-            etsi_varauksia_valikko(varaus_numerot, varauksien_nimet, huoneiden_maara);
+            etsi_varauksia_valikko(varaus_numerot, varauksien_nimet);
         // Tehdään huoneenvaraus mahdollisuus valikkoon
         } else if (paavalikko_valinta == 2) {
-            varaus_valikko(min_varaus_numero, max_varaus_numero, vastaus, kayttajan_valitsema_huonenumero, huoneiden_maara, varaus_numerot, varauksien_nimet, huone_tyyppi, kayttajan_yot);
+            varaus_valikko(min_varaus_numero, max_varaus_numero, huoneiden_maara, varaus_numerot, varauksien_nimet);
         }
     }
     
