@@ -1,4 +1,4 @@
-// Arvosana 4 toteutus 
+// Arvosana 4 toteutus. Lisä ominaisuudet ovat alennus, random huone määrä ja käyttäjä voi valita itse huoneen tai antaa ohjelman arpoa käyttäjälle huoneen
 
 // Tarvitaan peruskirjasto tietvirtojen käsittelemiseen
 #include <iostream>
